@@ -18,8 +18,7 @@ type AuthState = {
   user: User | null
   profile: Profile | null
   localMode: boolean
-  signInWithMagicLink: (email: string) => Promise<void>
-  verifyEmailCode: (email: string, code: string) => Promise<void>
+  signInWithPassword: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   enterLocalMode: () => void
   refreshProfile: () => Promise<void>
@@ -72,22 +71,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [localMode])
 
-  const signInWithMagicLink = useCallback(async (email: string) => {
+  const signInWithPassword = useCallback(async (email: string, password: string) => {
     if (!supabase) throw new Error('Supabase not configured')
-    const redirectTo = `${window.location.origin}${window.location.pathname}`
-    const { error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
-      options: { emailRedirectTo: redirectTo },
-    })
-    if (error) throw error
-  }, [])
-
-  const verifyEmailCode = useCallback(async (email: string, code: string) => {
-    if (!supabase) throw new Error('Supabase not configured')
-    const { error } = await supabase.auth.verifyOtp({
-      email,
-      token: code.trim(),
-      type: 'email',
+      password,
     })
     if (error) throw error
   }, [])
@@ -114,8 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user: session?.user ?? null,
       profile,
       localMode: localMode || !isSupabaseConfigured,
-      signInWithMagicLink,
-      verifyEmailCode,
+      signInWithPassword,
       signOut,
       enterLocalMode,
       refreshProfile,
@@ -125,8 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       profile,
       localMode,
-      signInWithMagicLink,
-      verifyEmailCode,
+      signInWithPassword,
       signOut,
       enterLocalMode,
       refreshProfile,

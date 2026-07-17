@@ -4,11 +4,9 @@ import { useAuth } from '../hooks/useAuth'
 import { isSupabaseConfigured } from '../lib/supabase'
 
 export function AuthPage() {
-  const { loading, session, localMode, signInWithMagicLink, verifyEmailCode, enterLocalMode } =
-    useAuth()
+  const { loading, session, localMode, signInWithPassword, enterLocalMode } = useAuth()
   const [email, setEmail] = useState('')
-  const [code, setCode] = useState('')
-  const [sent, setSent] = useState(false)
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -31,24 +29,9 @@ export function AuthPage() {
     setError('')
     setBusy(true)
     try {
-      await signInWithMagicLink(email.trim())
-      setSent(true)
+      await signInWithPassword(email.trim(), password)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not send magic link')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function onVerifyCode(e: FormEvent) {
-    e.preventDefault()
-    setError('')
-    setBusy(true)
-    try {
-      await verifyEmailCode(email.trim(), code)
-      // Session change re-renders and redirects via the guard above.
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not verify code')
+      setError(err instanceof Error ? err.message : 'Could not sign in')
     } finally {
       setBusy(false)
     }
@@ -60,7 +43,7 @@ export function AuthPage() {
         <h1 className="page-title">
           The Solomons <em style={{ fontStyle: 'italic', color: 'var(--terracotta)' }}>Cook</em>
         </h1>
-        <p className="muted">Sign in with a magic link to share recipes with each other.</p>
+        <p className="muted">Sign in to your shared cookbook.</p>
 
         {!isSupabaseConfigured ? (
           <div className="note-card">
@@ -87,41 +70,23 @@ export function AuthPage() {
                 autoComplete="email"
               />
             </div>
+            <div className="field">
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+              />
+            </div>
             {error ? <p className="error">{error}</p> : null}
-            {!sent ? (
-              <button type="submit" className="btn primary" disabled={busy}>
-                {busy ? 'Sending…' : 'Send sign-in email'}
-              </button>
-            ) : null}
-            <button type="button" className="btn quiet" onClick={enterLocalMode}>
-              Continue locally instead
+            <button type="submit" className="btn primary" disabled={busy}>
+              {busy ? 'Signing in…' : 'Sign in'}
             </button>
           </form>
         )}
-
-        {isSupabaseConfigured && sent ? (
-          <form className="stack" onSubmit={onVerifyCode}>
-            <p className="muted">
-              Check your email — tap the link, or enter the 6-digit code here:
-            </p>
-            <div className="field">
-              <label htmlFor="code">Sign-in code</label>
-              <input
-                id="code"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                pattern="[0-9]*"
-                maxLength={6}
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="123456"
-              />
-            </div>
-            <button type="submit" className="btn primary" disabled={busy || code.trim().length < 6}>
-              {busy ? 'Verifying…' : 'Verify code'}
-            </button>
-          </form>
-        ) : null}
       </div>
     </div>
   )

@@ -4,8 +4,10 @@ import { useAuth } from '../hooks/useAuth'
 import { isSupabaseConfigured } from '../lib/supabase'
 
 export function AuthPage() {
-  const { loading, session, localMode, signInWithMagicLink, enterLocalMode } = useAuth()
+  const { loading, session, localMode, signInWithMagicLink, verifyEmailCode, enterLocalMode } =
+    useAuth()
   const [email, setEmail] = useState('')
+  const [code, setCode] = useState('')
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -33,6 +35,20 @@ export function AuthPage() {
       setSent(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not send magic link')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function onVerifyCode(e: FormEvent) {
+    e.preventDefault()
+    setError('')
+    setBusy(true)
+    try {
+      await verifyEmailCode(email.trim(), code)
+      // Session change re-renders and redirects via the guard above.
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not verify code')
     } finally {
       setBusy(false)
     }
@@ -72,18 +88,40 @@ export function AuthPage() {
               />
             </div>
             {error ? <p className="error">{error}</p> : null}
-            {sent ? (
-              <p className="muted">Check your email for the sign-in link.</p>
-            ) : (
+            {!sent ? (
               <button type="submit" className="btn primary" disabled={busy}>
-                {busy ? 'Sending…' : 'Send magic link'}
+                {busy ? 'Sending…' : 'Send sign-in email'}
               </button>
-            )}
+            ) : null}
             <button type="button" className="btn quiet" onClick={enterLocalMode}>
               Continue locally instead
             </button>
           </form>
         )}
+
+        {isSupabaseConfigured && sent ? (
+          <form className="stack" onSubmit={onVerifyCode}>
+            <p className="muted">
+              Check your email — tap the link, or enter the 6-digit code here:
+            </p>
+            <div className="field">
+              <label htmlFor="code">Sign-in code</label>
+              <input
+                id="code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="[0-9]*"
+                maxLength={6}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="123456"
+              />
+            </div>
+            <button type="submit" className="btn primary" disabled={busy || code.trim().length < 6}>
+              {busy ? 'Verifying…' : 'Verify code'}
+            </button>
+          </form>
+        ) : null}
       </div>
     </div>
   )

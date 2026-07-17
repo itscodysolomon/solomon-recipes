@@ -19,6 +19,7 @@ type AuthState = {
   profile: Profile | null
   localMode: boolean
   signInWithMagicLink: (email: string) => Promise<void>
+  verifyEmailCode: (email: string, code: string) => Promise<void>
   signOut: () => Promise<void>
   enterLocalMode: () => void
   refreshProfile: () => Promise<void>
@@ -81,6 +82,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error
   }, [])
 
+  const verifyEmailCode = useCallback(async (email: string, code: string) => {
+    if (!supabase) throw new Error('Supabase not configured')
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token: code.trim(),
+      type: 'email',
+    })
+    if (error) throw error
+  }, [])
+
   const signOut = useCallback(async () => {
     if (supabase && !localMode) await supabase.auth.signOut()
     setSession(null)
@@ -104,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profile,
       localMode: localMode || !isSupabaseConfigured,
       signInWithMagicLink,
+      verifyEmailCode,
       signOut,
       enterLocalMode,
       refreshProfile,
@@ -114,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profile,
       localMode,
       signInWithMagicLink,
+      verifyEmailCode,
       signOut,
       enterLocalMode,
       refreshProfile,

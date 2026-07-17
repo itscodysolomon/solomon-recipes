@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Solomons Cook — Visual Direction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --cream: #FAF5EC;
+    --oat: #F1E8D9;
+    --espresso: #2E2620;
+    --terracotta: #C25E3F;
+    --terracotta-deep: #9E4527;
+    --sage: #7C8450;
+    --teal: #3E7C8A;
+    --cognac: #A9683E;
+    --ink-soft: #6B5F53;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--cream);
+    color: var(--espresso);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+  .display { font-family: 'Fraunces', serif; }
+
+  /* ---------- Hero: masonry photo wall, main page only ---------- */
+  .hero {
+    position: relative;
+    height: 560px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+  .masonry {
+    position: absolute;
+    inset: -24px;
+    columns: 5;
+    column-gap: 12px;
+  }
+  .masonry img {
+    width: 100%;
+    display: block;
+    margin-bottom: 12px;
+    border-radius: 10px;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, rgba(250, 245, 236, 0.78) 0%, rgba(250, 245, 236, 0.84) 55%, var(--cream) 100%);
+  }
+  .hero-content {
+    position: relative; z-index: 2;
+    width: 100%;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 32px 56px;
+    color: var(--espresso);
+  }
+  .hero-kicker {
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--terracotta-deep);
+    margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-size: 76px;
+    font-weight: 560;
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+    font-variation-settings: 'opsz' 144;
+  }
+  .hero h1 em {
+    font-style: italic;
+    font-weight: 480;
+    color: var(--terracotta);
+  }
+  .hero-sub {
+    margin-top: 16px;
+    font-size: 17px;
+    max-width: 520px;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- Sections ---------- */
+  section { padding: 72px 0; }
+  section + section { border-top: 1px solid rgba(46, 38, 32, 0.12); }
+  .section-label {
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--terracotta);
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: 34px;
+    font-weight: 540;
+    margin-bottom: 32px;
+  }
+
+  /* ---------- Palette ---------- */
+  .swatches { display: grid; grid-template-columns: repeat(7, 1fr); gap: 14px; }
+  .swatch { border-radius: 14px; overflow: hidden; border: 1px solid rgba(46,38,32,0.1); }
+  .swatch .chip { height: 96px; }
+  .swatch .meta { padding: 10px 12px; background: #fff; }
+  .swatch .name { font-weight: 600; font-size: 13px; }
+  .swatch .hex { font-size: 12px; color: var(--ink-soft); }
+  .palette-note { margin-top: 20px; color: var(--ink-soft); font-size: 15px; max-width: 640px; }
+
+  /* ---------- Type ---------- */
+  .type-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 48px; align-items: start; }
+  .specimen > div { padding: 18px 0; border-bottom: 1px dashed rgba(46,38,32,0.15); }
+  .specimen .t-display { font-size: 52px; font-weight: 560; line-height: 1.05; font-variation-settings: 'opsz' 144; }
+  .specimen .t-h2 { font-size: 30px; font-weight: 540; }
+  .specimen .t-h3 { font-size: 20px; font-weight: 600; font-family: 'Inter', sans-serif; }
+  .specimen .t-body { font-size: 16px; max-width: 480px; }
+  .specimen .t-meta { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600; color: var(--ink-soft); }
+  .type-notes { background: var(--oat); border-radius: 16px; padding: 28px; font-size: 15px; }
+  .type-notes h4 { font-family: 'Fraunces', serif; font-size: 19px; margin-bottom: 10px; }
+  .type-notes p { color: #574C40; margin-bottom: 12px; }
+  .type-notes strong { color: var(--espresso); }
+
+  /* ---------- Photo treatment: masonry overlay weights ---------- */
+  .treatments { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .mini-wall {
+    position: relative;
+    height: 320px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(46,38,32,0.1);
+  }
+  .mini-wall .masonry { columns: 3; inset: -12px; column-gap: 8px; }
+  .mini-wall .masonry img { margin-bottom: 8px; border-radius: 6px; }
+  .mini-wall::after {
+    content: '';
+    position: absolute; inset: 0; z-index: 1;
+    background: var(--overlay);
+  }
+  .mini-wall.w-light { --overlay: rgba(250, 245, 236, 0.62); }
+  .mini-wall.w-mid { --overlay: rgba(250, 245, 236, 0.80); }
+  .mini-wall.w-mid { outline: 2px solid var(--terracotta); outline-offset: 3px; }
+  .mini-wall.w-heavy { --overlay: rgba(250, 245, 236, 0.90); }
+  .mini-wall .sample {
+    position: absolute; inset: 0; z-index: 2;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; padding: 24px;
+  }
+  .mini-wall .sample .display { font-size: 26px; font-weight: 560; }
+  .mini-wall .sample p { font-size: 13.5px; color: var(--ink-soft); margin-top: 4px; }
+  .treatment-cap { margin-top: 10px; }
+  .treatment-cap b { display: block; font-family: 'Fraunces', serif; font-size: 17px; font-weight: 560; }
+  .treatment-cap span { font-size: 13px; color: var(--ink-soft); }
+  .treatment-note { margin-top: 24px; color: var(--ink-soft); font-size: 15px; max-width: 640px; }
+
+  /* ---------- Components ---------- */
+  .components { display: grid; grid-template-columns: 340px 1fr; gap: 48px; align-items: start; }
+  .recipe-card {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(46,38,32,0.1);
+    box-shadow: 0 10px 30px -18px rgba(46,38,32,0.35);
+  }
+  .recipe-card .photo { height: 210px; position: relative; }
+  .recipe-card .photo img { width: 100%; height: 100%; object-fit: cover; }
+  .recipe-card .fav {
+    position: absolute; top: 12px; right: 12px;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(250,245,236,0.92);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--terracotta);
+  }
+  .recipe-card .body { padding: 18px 20px 20px; }
+  .recipe-card h3 { font-family: 'Fraunces', serif; font-size: 21px; font-weight: 560; margin-bottom: 6px; }
+  .recipe-card .meta-row { font-size: 13px; color: var(--ink-soft); margin-bottom: 12px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip-tag {
+    font-size: 12px; font-weight: 600;
+    padding: 5px 12px; border-radius: 999px;
+    background: var(--oat); color: #6B5335;
+  }
+  .chip-tag.diet { background: #E7EBDB; color: #556030; }
+  .chip-tag.spice { background: #F6DFD5; color: var(--terracotta-deep); }
+
+  .ui-bits { display: flex; flex-direction: column; gap: 28px; }
+  .btn-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 14.5px; font-weight: 600;
+    padding: 12px 24px; border-radius: 999px;
+    border: none; cursor: pointer;
+  }
+  .btn.primary { background: var(--terracotta); color: var(--cream); }
+  .btn.secondary { background: transparent; color: var(--espresso); border: 1.5px solid rgba(46,38,32,0.35); }
+  .btn.quiet { background: var(--oat); color: var(--espresso); }
+  .ui-label { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; color: var(--ink-soft); margin-bottom: 12px; }
+  .scaler {
+    display: inline-flex; align-items: center; gap: 0;
+    border: 1.5px solid rgba(46,38,32,0.25); border-radius: 999px; overflow: hidden;
+    background: #fff;
+  }
+  .scaler button {
+    border: none; background: none; font-size: 17px; font-weight: 600;
+    width: 42px; height: 42px; cursor: pointer; color: var(--espresso);
+  }
+  .scaler .count { padding: 0 18px; font-weight: 600; font-size: 15px; border-left: 1.5px solid rgba(46,38,32,0.15); border-right: 1.5px solid rgba(46,38,32,0.15); }
+  .scaler .count small { display: block; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); text-align: center; }
+
+  .voice { background: var(--espresso); color: var(--cream); border-radius: 20px; padding: 44px 48px; }
+  .voice .section-label { color: #EDC9A3; }
+  .voice h3 { font-family: 'Fraunces', serif; font-size: 30px; font-weight: 540; margin-bottom: 18px; max-width: 640px; }
+  .voice h3 em { font-style: italic; color: #F3D9B8; }
+  .voice p { color: rgba(250,245,236,0.75); max-width: 620px; font-size: 15.5px; }
+
+  /* ---------- Mobile-first PWA ---------- */
+  .mobile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; align-items: start; }
+  .phone {
+    width: 100%;
+    max-width: 290px;
+    margin: 0 auto;
+    aspect-ratio: 9 / 18.5;
+    border: 9px solid var(--espresso);
+    border-radius: 38px;
+    background: var(--cream);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .phone-cap { text-align: center; margin-top: 14px; }
+  .phone-cap b { display: block; font-family: 'Fraunces', serif; font-size: 17px; font-weight: 560; }
+  .phone-cap span { font-size: 13px; color: var(--ink-soft); }
+
+  .p-hero { position: relative; height: 34%; flex-shrink: 0; overflow: hidden; }
+  .p-hero .masonry { columns: 2; inset: -10px; column-gap: 6px; }
+  .p-hero .masonry img { margin-bottom: 6px; border-radius: 5px; }
+  .p-hero::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, rgba(250,245,236,0.80) 0%, rgba(250,245,236,0.84) 55%, var(--cream) 100%);
+  }
+  .p-hero .p-title {
+    position: absolute; z-index: 2; bottom: 10px; left: 16px; right: 16px;
+  }
+  .p-hero .p-title .k { font-size: 8.5px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; color: var(--terracotta-deep); }
+  .p-hero .p-title h4 { font-family: 'Fraunces', serif; font-size: 23px; font-weight: 560; line-height: 1.05; }
+  .p-hero .p-title h4 em { font-style: italic; color: var(--terracotta); }
+
+  .p-body { padding: 12px 14px; flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 10px; }
+  .p-search {
+    background: #fff; border: 1px solid rgba(46,38,32,0.18); border-radius: 999px;
+    padding: 9px 14px; font-size: 11.5px; color: var(--ink-soft);
+  }
+  .p-label { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; color: var(--ink-soft); }
+  .p-cards { display: flex; gap: 8px; }
+  .p-card { flex: 1; background: #fff; border: 1px solid rgba(46,38,32,0.1); border-radius: 12px; overflow: hidden; }
+  .p-card .ph { height: 58px; }
+  .p-card .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .p-card .tx { padding: 7px 9px; }
+  .p-card .tx b { display: block; font-family: 'Fraunces', serif; font-size: 11px; font-weight: 560; line-height: 1.2; }
+  .p-card .tx span { font-size: 9px; color: var(--ink-soft); }
+  .p-chiprow { display: flex; gap: 5px; flex-wrap: wrap; }
+  .p-chip { font-size: 9px; font-weight: 600; padding: 4px 9px; border-radius: 999px; background: var(--oat); color: #6B5335; }
+  .p-chip.on { background: var(--terracotta); color: var(--cream); }
+
+  .p-tabs {
+    flex-shrink: 0;
+    display: flex;
+    border-top: 1px solid rgba(46,38,32,0.12);
+    background: #fff;
+    padding: 8px 6px 14px;
+  }
+  .p-tabs .tab { flex: 1; text-align: center; font-size: 9px; font-weight: 600; color: var(--ink-soft); }
+  .p-tabs .tab svg { display: block; width: 17px; height: 17px; margin: 0 auto 3px; }
+  .p-tabs .tab.active { color: var(--terracotta-deep); }
+
+  .p-recipe-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 560; line-height: 1.15; }
+  .p-meta { font-size: 9.5px; color: var(--ink-soft); }
+  .p-ing { display: flex; flex-direction: column; gap: 6px; }
+  .p-ing .row { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+  .p-ing .row .cb { width: 14px; height: 14px; border: 1.6px solid rgba(46,38,32,0.35); border-radius: 4px; flex-shrink: 0; }
+  .p-ing .row.done .cb { background: var(--sage); border-color: var(--sage); }
+  .p-ing .row.done span { text-decoration: line-through; color: var(--ink-soft); }
+  .p-scaler { display: inline-flex; align-items: center; border: 1.4px solid rgba(46,38,32,0.25); border-radius: 999px; background: #fff; align-self: flex-start; }
+  .p-scaler .b { width: 30px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
+  .p-scaler .c { padding: 0 10px; font-size: 10.5px; font-weight: 600; border-left: 1.4px solid rgba(46,38,32,0.12); border-right: 1.4px solid rgba(46,38,32,0.12); }
+  .p-cta {
+    margin-top: auto;
+    background: var(--terracotta); color: var(--cream);
+    border-radius: 999px; text-align: center;
+    padding: 11px; font-size: 12px; font-weight: 600;
+  }
+
+  .p-step-count { font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; color: var(--terracotta-deep); }
+  .p-step { font-family: 'Fraunces', serif; font-size: 16.5px; font-weight: 500; line-height: 1.35; }
+  .p-step-nav { margin-top: auto; display: flex; gap: 8px; }
+  .p-step-nav .n { flex: 1; text-align: center; padding: 10px; border-radius: 999px; font-size: 11.5px; font-weight: 600; }
+  .p-step-nav .prev { border: 1.4px solid rgba(46,38,32,0.3); }
+  .p-step-nav .next { background: var(--terracotta); color: var(--cream); }
+  .p-timer { background: var(--oat); border-radius: 12px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; }
+  .p-timer b { font-size: 15px; font-variant-numeric: tabular-nums; }
+  .p-timer span { font-size: 9.5px; color: var(--ink-soft); }
+
+  .pwa-notes { margin-top: 36px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .pwa-note { background: var(--oat); border-radius: 14px; padding: 18px 20px; }
+  .pwa-note b { display: block; font-family: 'Fraunces', serif; font-size: 16px; font-weight: 560; margin-bottom: 4px; }
+  .pwa-note p { font-size: 13px; color: #574C40; }
+
+  footer { padding: 40px 0 64px; color: var(--ink-soft); font-size: 13.5px; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 760px) {
+    .wrap { padding: 0 20px; }
+    section { padding: 48px 0; }
+    .hero { height: 440px; }
+    .hero h1 { font-size: 44px; }
+    .hero-sub { font-size: 15px; }
+    .hero-content { padding: 0 20px 40px; }
+    .masonry { columns: 3; }
+    .section-title { font-size: 27px; }
+    .swatches { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .swatch .chip { height: 64px; }
+    .type-grid, .treatments, .components, .mobile-grid, .pwa-notes { grid-template-columns: 1fr; }
+    .type-grid { display: block; }
+    .type-notes { margin-top: 28px; }
+    .specimen .t-display { font-size: 34px; }
+    .treatments > div { max-width: 420px; }
+    .voice { padding: 32px 24px; }
+    .voice h3 { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="masonry" data-random-gallery>
+    <img src="../photos/vsco_102625.jpg" alt="" />
+    <img src="../photos/vsco_070724.jpg" alt="" />
+    <img src="../photos/vsco_021824.jpg" alt="" />
+    <img src="../photos/vsco_051723.jpg" alt="" />
+    <img src="../photos/vsco_030825.jpg" alt="" />
+    <img src="../photos/vsco_012426.jpg" alt="" />
+    <img src="../photos/vsco_060122.jpg" alt="" />
+    <img src="../photos/vsco_072823.jpg" alt="" />
+    <img src="../photos/vsco_022324.jpg" alt="" />
+    <img src="../photos/vsco_080125.jpg" alt="" />
+    <img src="../photos/vsco_060123.jpg" alt="" />
+    <img src="../photos/vsco_111724.jpg" alt="" />
+  </div>
+  <div class="hero-content">
+    <div class="hero-kicker">Our table, our recipes</div>
+    <h1 class="display">The Solomons <em>Cook</em></h1>
+    <p class="hero-sub">A shared cookbook for the two of us — everything we love to make, tweak, and make again.</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+<section>
+  <div class="section-label">01 — Palette</div>
+  <h2 class="section-title display">Pulled from your photos</h2>
+  <div class="swatches">
+    <div class="swatch"><div class="chip" style="background:#FAF5EC"></div><div class="meta"><div class="name">Cream</div><div class="hex">#FAF5EC</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#F1E8D9"></div><div class="meta"><div class="name">Oat</div><div class="hex">#F1E8D9</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#2E2620"></div><div class="meta"><div class="name">Espresso</div><div class="hex">#2E2620</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#C25E3F"></div><div class="meta"><div class="name">Terracotta</div><div class="hex">#C25E3F</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#7C8450"></div><div class="meta"><div class="name">Sage</div><div class="hex">#7C8450</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#3E7C8A"></div><div class="meta"><div class="name">Teal</div><div class="hex">#3E7C8A</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#A9683E"></div><div class="meta"><div class="name">Cognac</div><div class="hex">#A9683E</div></div></div>
+  </div>
+  <p class="palette-note">Cream and oat carry the interface. Espresso is text. Terracotta is the single action color — buttons, favorites, links. Sage marks dietary flags, teal is a rare accent (it shows up in your caps, plates, and cans), cognac warms photo captions and borders.</p>
+</section>
+
+<section>
+  <div class="section-label">02 — Typography</div>
+  <h2 class="section-title display">Fraunces &amp; Inter</h2>
+  <div class="type-grid">
+    <div class="specimen">
+      <div><div class="t-display display">Cast-Iron Salmon Kebabs</div></div>
+      <div><div class="t-h2 display">Sunday brunch, done right</div></div>
+      <div><div class="t-h3">Ingredients · Serves 4</div></div>
+      <div><div class="t-body">Toss the onions with sumac and a squeeze of lemon while the grill heats. We halved the salt last time and it was better — do that again.</div></div>
+      <div><div class="t-meta">35 min · Weeknight · Gluten-free</div></div>
+    </div>
+    <div class="type-notes">
+      <h4>Why these two</h4>
+      <p><strong>Fraunces</strong> is a warm, slightly retro serif that feels like a hand-me-down cookbook without being kitschy. It carries recipe titles and section headers.</p>
+      <p><strong>Inter</strong> does all the working text — ingredients, steps, labels — because in the kitchen, legibility beats charm.</p>
+      <p>Both are free Google Fonts, so nothing to license.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-label">03 — Photo treatment</div>
+  <h2 class="section-title display">Masonry wall, main page only</h2>
+  <div class="treatments">
+    <div>
+      <div class="mini-wall w-light">
+        <div class="masonry">
+          <img src="../photos/vsco_022324.jpg" alt="" />
+          <img src="../photos/vsco_060123.jpg" alt="" />
+          <img src="../photos/vsco_080325.jpg" alt="" />
+          <img src="../photos/vsco_073025.jpg" alt="" />
+          <img src="../photos/vsco_020825.jpg" alt="" />
+          <img src="../photos/vsco_010123.jpg" alt="" />
+        </div>
+        <div class="sample">
+          <div class="display">62% overlay</div>
+          <p>Too busy — photos compete with text</p>
+        </div>
+      </div>
+      <div class="treatment-cap"><b>Too light</b><span>Faces and dishes still grab attention</span></div>
+    </div>
+    <div>
+      <div class="mini-wall w-mid">
+        <div class="masonry">
+          <img src="../photos/vsco_022324.jpg" alt="" />
+          <img src="../photos/vsco_060123.jpg" alt="" />
+          <img src="../photos/vsco_080325.jpg" alt="" />
+          <img src="../photos/vsco_073025.jpg" alt="" />
+          <img src="../photos/vsco_020825.jpg" alt="" />
+          <img src="../photos/vsco_010123.jpg" alt="" />
+        </div>
+        <div class="sample">
+          <div class="display">80% overlay</div>
+          <p>The pick — texture without pull</p>
+        </div>
+      </div>
+      <div class="treatment-cap"><b>Just right</b><span>You sense the memories, read the words</span></div>
+    </div>
+    <div>
+      <div class="mini-wall w-heavy">
+        <div class="masonry">
+          <img src="../photos/vsco_022324.jpg" alt="" />
+          <img src="../photos/vsco_060123.jpg" alt="" />
+          <img src="../photos/vsco_080325.jpg" alt="" />
+          <img src="../photos/vsco_073025.jpg" alt="" />
+          <img src="../photos/vsco_020825.jpg" alt="" />
+          <img src="../photos/vsco_010123.jpg" alt="" />
+        </div>
+        <div class="sample">
+          <div class="display">90% overlay</div>
+          <p>Too washed — why have photos at all?</p>
+        </div>
+      </div>
+      <div class="treatment-cap"><b>Too heavy</b><span>Photos disappear into the cream</span></div>
+    </div>
+  </div>
+  <p class="treatment-note">The photo wall lives only on the main page, fading into cream as you scroll. Interior pages — recipes, planner, search — are clean cream with no background imagery, so the food you're cooking never competes with the food in the photos. Recipe cards still show the recipe's own photo, since that's content, not decoration.</p>
+</section>
+
+<section>
+  <div class="section-label">04 — Components</div>
+  <h2 class="section-title display">How it feels in the UI</h2>
+  <div class="components">
+    <div class="recipe-card">
+      <div class="photo">
+        <img src="../photos/vsco_012426.jpg" alt="" />
+        <div class="fav">&#10084;</div>
+      </div>
+      <div class="body">
+        <h3>Soft Scrambled Eggs &amp; Sourdough</h3>
+        <div class="meta-row">25 min &nbsp;·&nbsp; Serves 2 &nbsp;·&nbsp; Made 6 times</div>
+        <div class="chips">
+          <span class="chip-tag">Weeknight</span>
+          <span class="chip-tag">Brunch</span>
+          <span class="chip-tag diet">GF option</span>
+          <span class="chip-tag spice">Mild</span>
+        </div>
+      </div>
+    </div>
+    <div class="ui-bits">
+      <div>
+        <div class="ui-label">Buttons</div>
+        <div class="btn-row">
+          <button class="btn primary">Save recipe</button>
+          <button class="btn secondary">Copy ingredients</button>
+          <button class="btn quiet">Print</button>
+        </div>
+      </div>
+      <div>
+        <div class="ui-label">Serving scaler</div>
+        <div class="scaler">
+          <button>&minus;</button>
+          <div class="count">4<small>servings</small></div>
+          <button>+</button>
+        </div>
+      </div>
+      <div>
+        <div class="ui-label">Tag chips</div>
+        <div class="chips">
+          <span class="chip-tag">Comfort</span>
+          <span class="chip-tag">Grill</span>
+          <span class="chip-tag">Date night</span>
+          <span class="chip-tag diet">Gluten-free</span>
+          <span class="chip-tag diet">No nuts</span>
+          <span class="chip-tag spice">Spicy &#215;3</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="voice">
+    <div class="section-label">05 — Voice</div>
+    <h3>Written like we talk: <em>&ldquo;make it again, but less salt.&rdquo;</em></h3>
+    <p>Labels and empty states use first-person-plural, casual language — "our favorites," "we haven't made this in a while," "add what we ate tonight." It's a household tool, not a food magazine.</p>
+  </div>
+</section>
+
+<section>
+  <div class="section-label">06 — Mobile-first PWA</div>
+  <h2 class="section-title display">Designed for the phone on the counter</h2>
+  <div class="mobile-grid">
+    <div>
+      <div class="phone">
+        <div class="p-hero">
+          <div class="masonry" data-random-gallery>
+            <img src="../photos/vsco_102625.jpg" alt="" />
+            <img src="../photos/vsco_051723.jpg" alt="" />
+            <img src="../photos/vsco_070724.jpg" alt="" />
+            <img src="../photos/vsco_030825.jpg" alt="" />
+          </div>
+          <div class="p-title">
+            <div class="k">Our table, our recipes</div>
+            <h4>The Solomons <em>Cook</em></h4>
+          </div>
+        </div>
+        <div class="p-body">
+          <div class="p-search">Search recipes, ingredients&hellip;</div>
+          <div class="p-chiprow">
+            <span class="p-chip on">All</span>
+            <span class="p-chip">Weeknight</span>
+            <span class="p-chip">Grill</span>
+            <span class="p-chip">Comfort</span>
+          </div>
+          <div class="p-label">Our favorites</div>
+          <div class="p-cards">
+            <div class="p-card">
+              <div class="ph"><img src="../photos/vsco_012426.jpg" alt="" /></div>
+              <div class="tx"><b>Soft Scrambled Eggs</b><span>25 min</span></div>
+            </div>
+            <div class="p-card">
+              <div class="ph"><img src="../photos/vsco_070724.jpg" alt="" /></div>
+              <div class="tx"><b>Grilled Brats</b><span>35 min</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="p-tabs">
+          <div class="tab active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Recipes</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2.5"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Plan</div>
+          <div class="tab add"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="var(--terracotta)"/><path d="M12 7.5v9M7.5 12h9" stroke="var(--cream)" stroke-width="2" stroke-linecap="round"/></svg>Add</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1 7.8 7.8 7.8-7.8 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>Faves</div>
+        </div>
+      </div>
+      <div class="phone-cap"><b>Home</b><span>Masonry wall shrinks to a header band</span></div>
+    </div>
+    <div>
+      <div class="phone">
+        <div class="p-body" style="padding-top:18px;">
+          <div class="p-recipe-title">Cast-Iron Salmon Kebabs</div>
+          <div class="p-meta">35 min &nbsp;&middot;&nbsp; Made 4 times &nbsp;&middot;&nbsp; GF</div>
+          <div class="p-scaler">
+            <div class="b">&minus;</div>
+            <div class="c">4 servings</div>
+            <div class="b">+</div>
+          </div>
+          <div class="p-label">Ingredients</div>
+          <div class="p-ing">
+            <div class="row done"><span class="cb"></span><span>1&frac12; lb salmon, cubed</span></div>
+            <div class="row done"><span class="cb"></span><span>2 red onions, quartered</span></div>
+            <div class="row"><span class="cb"></span><span>2 tbsp sumac</span></div>
+            <div class="row"><span class="cb"></span><span>1 lemon, juiced</span></div>
+            <div class="row"><span class="cb"></span><span>Flatbread, for serving</span></div>
+          </div>
+          <div class="p-cta">Start cooking</div>
+        </div>
+      </div>
+      <div class="phone-cap"><b>Recipe</b><span>Checkable ingredients, scaler up top</span></div>
+    </div>
+    <div>
+      <div class="phone">
+        <div class="p-body" style="padding-top:18px;">
+          <div class="p-step-count">Step 3 of 7</div>
+          <div class="p-step">Thread the salmon and onions onto skewers, alternating as you go. Season generously with the sumac mix.</div>
+          <div class="p-timer"><span>Grill preheat</span><b>4:32</b></div>
+          <div class="p-step-nav">
+            <div class="n prev">Back</div>
+            <div class="n next">Next step</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-cap"><b>Cook mode</b><span>One step at a time, screen stays awake</span></div>
+    </div>
+  </div>
+  <div class="pwa-notes">
+    <div class="pwa-note">
+      <b>Installable</b>
+      <p>Add to home screen with our own icon — opens full-screen like a native app, no browser chrome.</p>
+    </div>
+    <div class="pwa-note">
+      <b>Offline first</b>
+      <p>Recipes cache locally, so the cabin with no signal still gets dinner. Edits sync when back online.</p>
+    </div>
+    <div class="pwa-note">
+      <b>Built for thumbs &amp; flour</b>
+      <p>Bottom tab bar in thumb reach, 44px+ touch targets, wake lock in cook mode so the screen never sleeps mid-recipe.</p>
+    </div>
+  </div>
+</section>
+
+<footer>The Solomons Cook — visual direction v2 · mobile-first · photos from /photos</footer>
+
+</div>
+<script>
+  const photoPool = [
+    'vsco60202a1842bd8.jpg',
+    'vsco60202b8073f70.jpg',
+    'vsco60459d17be876.jpg',
+    'vsco60b07cfe0b96d.jpg',
+    'vsco61eb5ab74c2d1.jpg',
+    'vsco623cb7a80e5da.jpg',
+    'vsco_010123.jpg',
+    'vsco_012426.jpg',
+    'vsco_020825.jpg',
+    'vsco_021824.jpg',
+    'vsco_022324.jpg',
+    'vsco_030825.jpg',
+    'vsco_051723.jpg',
+    'vsco_060122.jpg',
+    'vsco_060123.jpg',
+    'vsco_070724.jpg',
+    'vsco_072823.jpg',
+    'vsco_073025.jpg',
+    'vsco_080125.jpg',
+    'vsco_080325.jpg',
+    'vsco_102625 (1).jpg',
+    'vsco_102625 (2).jpg',
+    'vsco_102625.jpg',
+    'vsco_111724 (1).jpg',
+    'vsco_111724 (2).jpg',
+    'vsco_111724.jpg'
+  ];
+
+  function shuffledPhotos() {
+    const photos = [...photoPool];
+    for (let index = photos.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [photos[index], photos[swapIndex]] = [photos[swapIndex], photos[index]];
+    }
+    return photos;
+  }
+
+  document.querySelectorAll('[data-random-gallery]').forEach((gallery) => {
+    const count = gallery.children.length;
+    const photos = shuffledPhotos().slice(0, count);
+
+    gallery.replaceChildren(...photos.map((filename) => {
+      const image = document.createElement('img');
+      image.src = `../photos/${encodeURIComponent(filename)}`;
+      image.alt = '';
+      image.loading = 'eager';
+      return image;
+    }));
+  });
+</script>
+</body>
+</html>

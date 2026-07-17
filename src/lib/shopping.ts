@@ -41,6 +41,17 @@ const SECTION_KEYWORDS: Record<string, string[]> = {
     'ground',
   ],
   Dairy: ['milk', 'butter', 'cheese', 'yogurt', 'cream', 'egg'],
+  Beverages: [
+    'coffee',
+    'tea',
+    'juice',
+    'wine',
+    'beer',
+    'soda',
+    'sparkling water',
+    'seltzer',
+    'kombucha',
+  ],
   Staples: [
     'oil',
     'salt',

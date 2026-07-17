@@ -60,6 +60,24 @@ const SECTION_KEYWORDS: Record<string, string[]> = {
     'seltzer',
     'kombucha',
   ],
+  Condiments: [
+    'ketchup',
+    'mayo',
+    'mayonnaise',
+    'mustard',
+    'hot sauce',
+    'sriracha',
+    'salsa',
+    'soy sauce',
+    'bbq sauce',
+    'barbecue sauce',
+    'dressing',
+    'tahini',
+    'relish',
+    'pickle',
+    'jam',
+    'jelly',
+  ],
   Staples: [
     'oil',
     'salt',
@@ -77,12 +95,14 @@ const SECTION_KEYWORDS: Record<string, string[]> = {
     'stock',
     'broth',
     'honey',
-    'mustard',
   ],
 }
 
 export function guessSection(name: string): string {
   const lower = name.toLowerCase()
+  // Dried/powdered forms are pantry spices even when they contain a produce
+  // word (garlic powder, onion flakes, dried basil).
+  if (/\b(powder|dried|flakes|seasoning)\b/.test(lower)) return 'Staples'
   for (const [section, words] of Object.entries(SECTION_KEYWORDS)) {
     if (words.some((w) => lower.includes(w))) return section
   }

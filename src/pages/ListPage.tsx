@@ -7,7 +7,7 @@ import {
 } from '../lib/api'
 import type { ShoppingItem } from '../lib/types'
 
-const SECTION_ORDER = ['Produce', 'Meat & fish', 'Dairy', 'Beverages', 'Staples', 'Other']
+const SECTION_ORDER = ['Produce', 'Meat & fish', 'Dairy', 'Beverages', 'Condiments', 'Staples', 'Other']
 
 export function ListPage() {
   const [items, setItems] = useState<ShoppingItem[]>([])

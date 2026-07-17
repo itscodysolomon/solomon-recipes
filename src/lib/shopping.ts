@@ -1,6 +1,7 @@
 const SECTION_KEYWORDS: Record<string, string[]> = {
   Produce: [
     'broccoli',
+    'brocoli',
     'onion',
     'garlic',
     'lemon',
@@ -26,7 +27,25 @@ const SECTION_KEYWORDS: Record<string, string[]> = {
     'ginger',
     'apple',
     'berry',
+    'berries',
+    'strawberr',
+    'blueberr',
+    'raspberr',
+    'blackberr',
     'banana',
+    'grape',
+    'orange',
+    'peach',
+    'pear',
+    'mango',
+    'melon',
+    'kale',
+    'cabbage',
+    'cauliflower',
+    'asparagus',
+    'squash',
+    'corn',
+    'green bean',
     'salad',
   ],
   'Meat & fish': [
@@ -42,6 +61,16 @@ const SECTION_KEYWORDS: Record<string, string[]> = {
     'brat',
     'steak',
     'thigh',
+    'bison',
+    'lamb',
+    'duck',
+    'ham',
+    'tuna',
+    'cod',
+    'tilapia',
+    'scallop',
+    'crab',
+    'lobster',
     'ground beef',
     'ground turkey',
     'ground pork',
@@ -98,13 +127,23 @@ const SECTION_KEYWORDS: Record<string, string[]> = {
   ],
 }
 
+/**
+ * Keywords match at word starts so substrings don't misfire (graham ≠ ham,
+ * steak ≠ tea). Short keywords match whole words (with optional plural) only.
+ */
+function keywordMatches(keyword: string, text: string): boolean {
+  const pattern =
+    keyword.length <= 3 ? `\\b${keyword}s?\\b` : `\\b${keyword}`
+  return new RegExp(pattern).test(text)
+}
+
 export function guessSection(name: string): string {
   const lower = name.toLowerCase()
   // Dried/powdered forms are pantry spices even when they contain a produce
   // word (garlic powder, onion flakes, dried basil).
   if (/\b(powder|dried|flakes|seasoning)\b/.test(lower)) return 'Staples'
   for (const [section, words] of Object.entries(SECTION_KEYWORDS)) {
-    if (words.some((w) => lower.includes(w))) return section
+    if (words.some((w) => keywordMatches(w, lower))) return section
   }
   return 'Other'
 }

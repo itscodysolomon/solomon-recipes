@@ -11,6 +11,8 @@
   --ink-soft: #6b5f53;
   --line: rgba(46, 38, 32, 0.12);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  /* Fixed bottom nav (~72px content) + breathing room above it + home indicator */
+  --bottom-nav-clearance: calc(96px + var(--safe-bottom));
   font-family: Inter, system-ui, sans-serif;
   line-height: 1.5;
   color: var(--espresso);
@@ -66,7 +68,7 @@ a {
 
 .app-main {
   flex: 1;
-  padding: 0 16px 88px;
+  padding: 0 16px var(--bottom-nav-clearance);
   overflow-y: auto;
 }
 

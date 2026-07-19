@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { deleteRecipe, getRecipe, updateRecipe, upsertPlanEntry } from '../lib/api'
-import { toISODate } from '../lib/dates'
+import { deleteRecipe, getRecipe, updateRecipe } from '../lib/api'
 import { recipePhotoUrl } from '../lib/recipePhotos'
 import { scaleIngredients } from '../lib/scale'
 import type { Recipe } from '../lib/types'
@@ -13,7 +12,6 @@ export function RecipePage() {
   const [servings, setServings] = useState(4)
   const [checked, setChecked] = useState<Record<number, boolean>>({})
   const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
 
   useEffect(() => {
     if (!id) return
@@ -37,12 +35,6 @@ export function RecipePage() {
   const hasIngredients = recipe.ingredients.length > 0
   const hasSteps = recipe.steps.length > 0
   const photo = recipePhotoUrl(recipe.photo_path)
-
-  async function addToPlan() {
-    const date = toISODate(new Date())
-    await upsertPlanEntry({ date, recipe_id: recipe!.id, label: recipe!.title })
-    setMessage('Added to today’s plan')
-  }
 
   async function remove() {
     if (!confirm(`Delete “${recipe!.title}”?`)) return
@@ -140,12 +132,7 @@ export function RecipePage() {
         </>
       ) : null}
 
-      {message ? <p className="muted">{message}</p> : null}
-
       <div className="btn-row no-print">
-        <button type="button" className="btn secondary" onClick={() => void addToPlan()}>
-          Add to plan
-        </button>
         <Link className="btn primary" to={`/add?edit=${recipe.id}`}>
           Edit recipe
         </Link>

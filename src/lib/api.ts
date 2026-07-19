@@ -1,5 +1,4 @@
 import { isSupabaseConfigured, requireSupabase } from './supabase'
-import { guessSection } from './shopping'
 import type {
   Ingredient,
   PlanEntry,
@@ -308,13 +307,14 @@ export async function clearPlanEntry(date: string): Promise<void> {
 }
 
 export async function listShoppingItems(): Promise<ShoppingItem[]> {
-  if (!isSupabaseConfigured) return readLocal().shopping
+  if (!isSupabaseConfigured) {
+    return readLocal().shopping.sort((a, b) => a.created_at.localeCompare(b.created_at))
+  }
 
   const sb = requireSupabase()
   const { data, error } = await sb
     .from('shopping_items')
     .select('*')
-    .order('section')
     .order('created_at')
   if (error) throw error
   return data ?? []
@@ -328,11 +328,11 @@ export async function replaceShoppingList(
 
   if (!isSupabaseConfigured) {
     const state = readLocal()
-    const now = new Date().toISOString()
-    state.shopping = items.map((item) => ({
+    const now = Date.now()
+    state.shopping = items.map((item, index) => ({
       id: uid(),
       household_id: profile.household_id!,
-      created_at: now,
+      created_at: new Date(now + index).toISOString(),
       ...item,
     }))
     writeLocal(state)
@@ -346,8 +346,9 @@ export async function replaceShoppingList(
   const { data, error } = await sb
     .from('shopping_items')
     .insert(
-      items.map((item) => ({
+      items.map((item, index) => ({
         household_id: profile.household_id,
+        created_at: new Date(Date.now() + index).toISOString(),
         ...item,
       })),
     )
@@ -380,7 +381,7 @@ export async function addShoppingItem(name: string): Promise<ShoppingItem> {
   const payload = {
     household_id: profile.household_id,
     name: name.trim(),
-    section: guessSection(name),
+    section: 'Other',
     checked: false,
     source_note: '',
   }
@@ -417,6 +418,49 @@ export async function deleteShoppingItem(id: string): Promise<void> {
 
   const sb = requireSupabase()
   const { error } = await sb.from('shopping_items').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function reorderShoppingItems(ids: string[]): Promise<void> {
+  const orderedAt = Date.now()
+  const dates = new Map(
+    ids.map((id, index) => [id, new Date(orderedAt + index).toISOString()]),
+  )
+
+  if (!isSupabaseConfigured) {
+    const state = readLocal()
+    state.shopping = ids
+      .map((id) => state.shopping.find((item) => item.id === id))
+      .filter((item): item is ShoppingItem => Boolean(item))
+      .map((item) => ({ ...item, created_at: dates.get(item.id)! }))
+    writeLocal(state)
+    return
+  }
+
+  const sb = requireSupabase()
+  const results = await Promise.all(
+    ids.map((id) =>
+      sb.from('shopping_items').update({ created_at: dates.get(id) }).eq('id', id),
+    ),
+  )
+  const failed = results.find((result) => result.error)
+  if (failed?.error) throw failed.error
+}
+
+export async function clearShoppingItems(): Promise<void> {
+  if (!isSupabaseConfigured) {
+    const state = readLocal()
+    state.shopping = []
+    writeLocal(state)
+    return
+  }
+
+  const profile = await getProfile()
+  if (!profile?.household_id) throw new Error('No household')
+  const { error } = await requireSupabase()
+    .from('shopping_items')
+    .delete()
+    .eq('household_id', profile.household_id)
   if (error) throw error
 }
 

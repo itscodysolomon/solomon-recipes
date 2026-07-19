@@ -438,9 +438,101 @@ a {
   accent-color: var(--sage);
 }
 
-.check-row.done span {
+.check-row.done > span {
   text-decoration: line-through;
   color: var(--ink-soft);
+}
+
+.shopping-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.shopping-title-row .page-title {
+  margin: 0;
+}
+
+.clear-list,
+.remove-item,
+.drag-handle {
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+}
+
+.clear-list {
+  padding: 6px 0;
+  font: inherit;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.clear-list:disabled {
+  opacity: 0.5;
+}
+
+.shopping-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shopping-row {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 10px 10px 8px;
+  position: relative;
+  z-index: 0;
+}
+
+.shopping-row.dragging {
+  z-index: 5;
+  box-shadow: 0 8px 24px rgba(46, 38, 32, 0.16);
+}
+
+.drag-handle {
+  width: 28px;
+  min-height: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 5px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-handle span {
+  width: 16px;
+  height: 1.5px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.shopping-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.shopping-source {
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+
+.remove-item {
+  padding: 4px 2px 4px 8px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
 }
 
 .day-row {

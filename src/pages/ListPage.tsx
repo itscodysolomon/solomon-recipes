@@ -1,19 +1,99 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import {
   addShoppingItem,
+  clearShoppingItems,
   deleteShoppingItem,
   listShoppingItems,
+  reorderShoppingItems,
   updateShoppingItem,
 } from '../lib/api'
 import type { ShoppingItem } from '../lib/types'
 
-const SECTION_ORDER = ['Produce', 'Meat & fish', 'Dairy', 'Beverages', 'Condiments', 'Staples', 'Other']
+function SortableShoppingItem({
+  item,
+  onToggle,
+  onRemove,
+}: {
+  item: ShoppingItem
+  onToggle: (item: ShoppingItem) => void
+  onRemove: (id: string) => void
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id })
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`shopping-row check-row ${item.checked ? 'done' : ''} ${isDragging ? 'dragging' : ''}`}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+    >
+      <button
+        type="button"
+        className="drag-handle"
+        aria-label={`Move ${item.name}`}
+        {...attributes}
+        {...listeners}
+      >
+        <span />
+        <span />
+        <span />
+      </button>
+      <input
+        type="checkbox"
+        checked={item.checked}
+        onChange={() => onToggle(item)}
+      />
+      <span className="shopping-name">{item.name}</span>
+      {item.source_note ? <span className="shopping-source">{item.source_note}</span> : null}
+      <button
+        type="button"
+        className="remove-item"
+        onClick={() => onRemove(item.id)}
+        aria-label={`Remove ${item.name}`}
+      >
+        ×
+      </button>
+    </div>
+  )
+}
 
 export function ListPage() {
   const [items, setItems] = useState<ShoppingItem[]>([])
   const [draft, setDraft] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const [clearing, setClearing] = useState(false)
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 150, tolerance: 5 },
+    }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
 
   async function refresh() {
     setLoading(true)
@@ -30,19 +110,6 @@ export function ListPage() {
   useEffect(() => {
     void refresh()
   }, [])
-
-  const grouped = useMemo(() => {
-    const map = new Map<string, ShoppingItem[]>()
-    for (const item of items) {
-      const list = map.get(item.section) ?? []
-      list.push(item)
-      map.set(item.section, list)
-    }
-    const sections = [...map.keys()].sort(
-      (a, b) => SECTION_ORDER.indexOf(a) - SECTION_ORDER.indexOf(b) || a.localeCompare(b),
-    )
-    return sections.map((section) => ({ section, items: map.get(section)! }))
-  }, [items])
 
   async function toggle(item: ShoppingItem) {
     await updateShoppingItem(item.id, { checked: !item.checked })
@@ -64,58 +131,81 @@ export function ListPage() {
     setItems((prev) => prev.filter((i) => i.id !== id))
   }
 
+  async function onDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const previous = items
+    const oldIndex = items.findIndex((item) => item.id === active.id)
+    const newIndex = items.findIndex((item) => item.id === over.id)
+    const reordered = arrayMove(items, oldIndex, newIndex)
+    setItems(reordered)
+    try {
+      await reorderShoppingItems(reordered.map((item) => item.id))
+      setError('')
+    } catch (err) {
+      setItems(previous)
+      setError(err instanceof Error ? err.message : 'Could not save the new order')
+    }
+  }
+
+  async function clearAll() {
+    if (!confirm(`Clear all ${items.length} items from the shopping list?`)) return
+    setClearing(true)
+    try {
+      await clearShoppingItems()
+      setItems([])
+      setError('')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not clear the list')
+    } finally {
+      setClearing(false)
+    }
+  }
+
   return (
     <div className="stack" style={{ paddingTop: 16 }}>
-      <h1 className="page-title">Shopping list</h1>
+      <div className="shopping-title-row">
+        <h1 className="page-title">Shopping list</h1>
+        {items.length > 0 ? (
+          <button
+            type="button"
+            className="clear-list"
+            disabled={clearing}
+            onClick={() => void clearAll()}
+          >
+            {clearing ? 'Clearing…' : 'Clear all'}
+          </button>
+        ) : null}
+      </div>
       <p className="meta">
         {items.length === 0
-          ? 'Generate one from the Plan tab, or add items below.'
+          ? 'Add items below as you think of them.'
           : `${items.filter((i) => !i.checked).length} remaining · ${items.length} total`}
       </p>
 
       {error ? <p className="error">{error}</p> : null}
       {loading ? <p className="muted">Loading…</p> : null}
 
-      {grouped.map(({ section, items: sectionItems }) => (
-        <div key={section} className="stack">
-          <div className="label">{section}</div>
-          <div className="check-list">
-            {sectionItems.map((item) => (
-              <div
-                key={item.id}
-                className={`check-row ${item.checked ? 'done' : ''}`}
-                style={{
-                  background: '#fff',
-                  border: '1px solid var(--line)',
-                  borderRadius: 12,
-                  padding: '10px 12px',
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={item.checked}
-                  onChange={() => void toggle(item)}
+      {items.length > 0 ? (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <SortableContext
+            items={items.map((item) => item.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="shopping-list">
+              {items.map((item) => (
+                <SortableShoppingItem
+                  key={item.id}
+                  item={item}
+                  onToggle={(next) => void toggle(next)}
+                  onRemove={(id) => void remove(id)}
                 />
-                <span style={{ flex: 1 }}>{item.name}</span>
-                {item.source_note ? (
-                  <span className="meta" style={{ fontSize: 11 }}>
-                    {item.source_note}
-                  </span>
-                ) : null}
-                <button
-                  type="button"
-                  className="meta"
-                  style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}
-                  onClick={() => void remove(item.id)}
-                  aria-label="Remove"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+      ) : null}
 
       <form className="stack" onSubmit={onAdd}>
         <div className="field">

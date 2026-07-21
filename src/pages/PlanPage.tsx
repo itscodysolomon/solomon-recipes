@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import {
   clearPlanEntry,
+  errorMessage,
   listPlanEntries,
   listRecipes,
   upsertPlanEntry,
@@ -38,7 +39,7 @@ export function PlanPage() {
       setRecipes(recipeList)
       setError('')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load plan')
+      setError(errorMessage(err, 'Could not load plan'))
     }
   }
 
@@ -97,7 +98,7 @@ export function PlanPage() {
       setSelectedDate(null)
       await refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save')
+      setError(errorMessage(err, 'Could not save'))
     } finally {
       setBusy(false)
     }
@@ -156,6 +157,7 @@ export function PlanPage() {
               Plan {selectedDate}
             </h2>
             <p className="meta">Pick a recipe or type a dinner, add a side if you want, then save.</p>
+            {error ? <p className="error">{error}</p> : null}
 
             <form className="stack" onSubmit={saveDay} style={{ marginTop: 12 }}>
               <div className="label">From our recipes</div>

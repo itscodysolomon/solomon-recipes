@@ -330,6 +330,12 @@ a {
   padding: 10px;
 }
 
+.recipe-row.selected {
+  border-color: var(--terracotta);
+  box-shadow: inset 0 0 0 1px var(--terracotta);
+  background: #fff8f4;
+}
+
 .recipe-row .thumb {
   width: 52px;
   height: 52px;

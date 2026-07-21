@@ -22,6 +22,24 @@ function uid(): string {
   return crypto.randomUUID()
 }
 
+export function errorMessage(err: unknown, fallback: string): string {
+  if (err instanceof Error && err.message) return err.message
+  if (err && typeof err === 'object' && 'message' in err) {
+    const message = (err as { message?: unknown }).message
+    if (typeof message === 'string' && message.trim()) return message
+  }
+  return fallback
+}
+
+function throwQueryError(error: { message: string; code?: string }, fallback: string): never {
+  if (error.code === '42703' && /plan_entries\.notes|column .*notes/i.test(error.message)) {
+    throw new Error(
+      'Plan notes need a database update. In Supabase → SQL, run supabase/migrations/002_plan_entry_notes.sql',
+    )
+  }
+  throw new Error(error.message || fallback)
+}
+
 function emptyLocal(): LocalState {
   const householdId = uid()
   return {
@@ -293,7 +311,7 @@ export async function upsertPlanEntry(input: {
     .select('*, recipe:recipes(*)')
     .single()
 
-  if (error) throw error
+  if (error) throwQueryError(error, 'Could not save plan entry')
   const r = data as PlanEntry & { recipe?: Recipe | null }
   return normalizePlanEntry(r, r.recipe ? normalizeRecipe(r.recipe) : null)
 }

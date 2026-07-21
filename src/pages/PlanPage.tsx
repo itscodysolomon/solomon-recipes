@@ -22,6 +22,7 @@ export function PlanPage() {
   const [entries, setEntries] = useState<PlanEntry[]>([])
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [recipeId, setRecipeId] = useState<string | null>(null)
   const [label, setLabel] = useState('')
   const [notes, setNotes] = useState('')
   const [error, setError] = useState('')
@@ -54,63 +55,45 @@ export function PlanPage() {
   useEffect(() => {
     if (!selectedDate) return
     const entry = byDate.get(selectedDate)
-    setNotes(entry?.notes ?? '')
+    setRecipeId(entry?.recipe_id ?? null)
     setLabel(entry?.recipe_id ? '' : (entry?.label ?? ''))
+    setNotes(entry?.notes ?? '')
   }, [selectedDate, byDate])
 
   const plannedCount = entries.filter((e) => e.recipe_id || e.label).length
-  const selectedEntry = selectedDate ? byDate.get(selectedDate) : undefined
+  const selectedRecipe = recipeId ? recipes.find((r) => r.id === recipeId) : undefined
+  const canSave = Boolean(recipeId || label.trim() || notes.trim())
 
-  async function assignRecipe(recipe: Recipe) {
-    if (!selectedDate) return
-    setBusy(true)
-    try {
-      await upsertPlanEntry({
-        date: selectedDate,
-        recipe_id: recipe.id,
-        label: recipe.title,
-        notes: notes.trim(),
-      })
-      setSelectedDate(null)
-      await refresh()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save')
-    } finally {
-      setBusy(false)
-    }
+  function pickRecipe(recipe: Recipe) {
+    setRecipeId(recipe.id)
+    setLabel('')
   }
 
-  async function assignLabel(e: FormEvent) {
+  function onLabelChange(value: string) {
+    setLabel(value)
+    if (value.trim()) setRecipeId(null)
+  }
+
+  async function saveDay(e: FormEvent) {
     e.preventDefault()
-    if (!selectedDate || !label.trim()) return
+    if (!selectedDate || !canSave) return
     setBusy(true)
     try {
-      await upsertPlanEntry({
-        date: selectedDate,
-        recipe_id: null,
-        label: label.trim(),
-        notes: notes.trim(),
-      })
-      setLabel('')
-      setSelectedDate(null)
-      await refresh()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function saveNotes() {
-    if (!selectedDate) return
-    setBusy(true)
-    try {
-      await upsertPlanEntry({
-        date: selectedDate,
-        recipe_id: selectedEntry?.recipe_id ?? null,
-        label: selectedEntry?.label ?? null,
-        notes: notes.trim(),
-      })
+      if (recipeId && selectedRecipe) {
+        await upsertPlanEntry({
+          date: selectedDate,
+          recipe_id: selectedRecipe.id,
+          label: selectedRecipe.title,
+          notes: notes.trim(),
+        })
+      } else {
+        await upsertPlanEntry({
+          date: selectedDate,
+          recipe_id: null,
+          label: label.trim() || null,
+          notes: notes.trim(),
+        })
+      }
       setSelectedDate(null)
       await refresh()
     } catch (err) {
@@ -172,73 +155,62 @@ export function PlanPage() {
             <h2 className="page-title" style={{ fontSize: 22 }}>
               Plan {selectedDate}
             </h2>
-            <p className="meta">Choose a dinner, then add a side or note if you want.</p>
+            <p className="meta">Pick a recipe or type a dinner, add a side if you want, then save.</p>
 
-            <form className="stack" onSubmit={assignLabel} style={{ marginTop: 12 }}>
+            <form className="stack" onSubmit={saveDay} style={{ marginTop: 12 }}>
+              <div className="label">From our recipes</div>
+              <div className="card-list" style={{ maxHeight: 220, overflow: 'auto' }}>
+                {recipes.map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    className={`recipe-row ${recipeId === r.id ? 'selected' : ''}`}
+                    style={{ width: '100%', textAlign: 'left', cursor: 'pointer' }}
+                    disabled={busy}
+                    onClick={() => pickRecipe(r)}
+                  >
+                    <div className="thumb">{r.title.charAt(0)}</div>
+                    <div className="body">
+                      <h3>{r.title}</h3>
+                      <p>{r.cook_time_minutes ? `${r.cook_time_minutes} min` : 'Recipe'}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
               <div className="field">
-                <label htmlFor="label">Dinner</label>
+                <label htmlFor="label">Or type a dinner</label>
                 <input
                   id="label"
                   value={label}
-                  onChange={(e) => setLabel(e.target.value)}
+                  onChange={(e) => onLabelChange(e.target.value)}
                   placeholder="Leftovers, takeout…"
                 />
               </div>
-              <button type="submit" className="btn secondary" disabled={busy || !label.trim()}>
-                Save dinner
-              </button>
-            </form>
 
-            <div className="field" style={{ marginTop: 16 }}>
-              <label htmlFor="plan-notes">Side or note</label>
-              <textarea
-                id="plan-notes"
-                rows={2}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Roasted broccoli, rice…"
-              />
-            </div>
-            <button
-              type="button"
-              className="btn secondary"
-              style={{ marginTop: 8 }}
-              disabled={busy}
-              onClick={() => void saveNotes()}
-            >
-              Save note
-            </button>
+              <div className="field">
+                <label htmlFor="plan-notes">Side or note</label>
+                <textarea
+                  id="plan-notes"
+                  rows={2}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Roasted broccoli, rice…"
+                />
+              </div>
 
-            <div className="label" style={{ marginTop: 16 }}>
-              From our recipes
-            </div>
-            <div className="card-list" style={{ maxHeight: 240, overflow: 'auto' }}>
-              {recipes.map((r) => (
-                <button
-                  key={r.id}
-                  type="button"
-                  className="recipe-row"
-                  style={{ width: '100%', textAlign: 'left', cursor: 'pointer', border: '1px solid var(--line)' }}
-                  disabled={busy}
-                  onClick={() => void assignRecipe(r)}
-                >
-                  <div className="thumb">{r.title.charAt(0)}</div>
-                  <div className="body">
-                    <h3>{r.title}</h3>
-                    <p>{r.cook_time_minutes ? `${r.cook_time_minutes} min` : 'Recipe'}</p>
-                  </div>
+              <div className="btn-row">
+                <button type="button" className="btn quiet" onClick={() => setSelectedDate(null)}>
+                  Cancel
                 </button>
-              ))}
-            </div>
-
-            <div className="btn-row" style={{ marginTop: 16 }}>
-              <button type="button" className="btn quiet" onClick={() => setSelectedDate(null)}>
-                Cancel
-              </button>
+                <button type="submit" className="btn primary" disabled={busy || !canSave}>
+                  Save
+                </button>
+              </div>
               <button type="button" className="btn secondary" disabled={busy} onClick={() => void clearDay()}>
                 Clear day
               </button>
-            </div>
+            </form>
           </div>
         </div>
       ) : null}

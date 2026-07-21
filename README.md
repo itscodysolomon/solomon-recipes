@@ -12,7 +12,9 @@ Shared household cookbook, rolling 7-day meal plan, and shopping list. Mobile-fi
 ## Setup
 
 1. Create a Supabase project.
-2. Run [`supabase/migrations/001_initial.sql`](supabase/migrations/001_initial.sql) in the SQL editor.
+2. Run the SQL migrations in the SQL editor, in order:
+   - [`supabase/migrations/001_initial.sql`](supabase/migrations/001_initial.sql)
+   - [`supabase/migrations/002_plan_entry_notes.sql`](supabase/migrations/002_plan_entry_notes.sql)
 3. In Supabase Auth, create the two household users with email/password, then disable new user signups.
 4. Copy env and fill keys:
 

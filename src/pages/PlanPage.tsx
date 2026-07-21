@@ -172,16 +172,31 @@ export function PlanPage() {
             <h2 className="page-title" style={{ fontSize: 22 }}>
               Plan {selectedDate}
             </h2>
-            <p className="meta">Pick a recipe or type a free-text dinner.</p>
+            <p className="meta">Choose a dinner, then add a side or note if you want.</p>
 
-            <div className="field" style={{ marginTop: 12 }}>
-              <label htmlFor="plan-notes">Note</label>
+            <form className="stack" onSubmit={assignLabel} style={{ marginTop: 12 }}>
+              <div className="field">
+                <label htmlFor="label">Dinner</label>
+                <input
+                  id="label"
+                  value={label}
+                  onChange={(e) => setLabel(e.target.value)}
+                  placeholder="Leftovers, takeout…"
+                />
+              </div>
+              <button type="submit" className="btn secondary" disabled={busy || !label.trim()}>
+                Save dinner
+              </button>
+            </form>
+
+            <div className="field" style={{ marginTop: 16 }}>
+              <label htmlFor="plan-notes">Side or note</label>
               <textarea
                 id="plan-notes"
                 rows={2}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Side: roasted broccoli, rice…"
+                placeholder="Roasted broccoli, rice…"
               />
             </div>
             <button
@@ -193,21 +208,6 @@ export function PlanPage() {
             >
               Save note
             </button>
-
-            <form className="stack" onSubmit={assignLabel} style={{ marginTop: 16 }}>
-              <div className="field">
-                <label htmlFor="label">Free text</label>
-                <input
-                  id="label"
-                  value={label}
-                  onChange={(e) => setLabel(e.target.value)}
-                  placeholder="Leftovers, takeout…"
-                />
-              </div>
-              <button type="submit" className="btn secondary" disabled={busy || !label.trim()}>
-                Save label
-              </button>
-            </form>
 
             <div className="label" style={{ marginTop: 16 }}>
               From our recipes

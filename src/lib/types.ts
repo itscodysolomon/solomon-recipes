@@ -68,4 +68,5 @@ export const COMMON_TAGS = [
   'Grill',
   'Comfort',
   'Brunch',
+  'Side',
 ] as const

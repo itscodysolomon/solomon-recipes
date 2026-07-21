@@ -27,6 +27,7 @@ export function PlanPage() {
   const [label, setLabel] = useState('')
   const [notes, setNotes] = useState('')
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
 
   async function refresh() {
@@ -80,22 +81,23 @@ export function PlanPage() {
     if (!selectedDate || !canSave) return
     setBusy(true)
     try {
-      if (recipeId && selectedRecipe) {
-        await upsertPlanEntry({
-          date: selectedDate,
-          recipe_id: selectedRecipe.id,
-          label: selectedRecipe.title,
-          notes: notes.trim(),
-        })
-      } else {
-        await upsertPlanEntry({
-          date: selectedDate,
-          recipe_id: null,
-          label: label.trim() || null,
-          notes: notes.trim(),
-        })
-      }
+      const result =
+        recipeId && selectedRecipe
+          ? await upsertPlanEntry({
+              date: selectedDate,
+              recipe_id: selectedRecipe.id,
+              label: selectedRecipe.title,
+              notes: notes.trim(),
+            })
+          : await upsertPlanEntry({
+              date: selectedDate,
+              recipe_id: null,
+              label: label.trim() || null,
+              notes: notes.trim(),
+            })
       setSelectedDate(null)
+      setNotice(result.warning ?? '')
+      setError('')
       await refresh()
     } catch (err) {
       setError(errorMessage(err, 'Could not save'))
@@ -124,6 +126,7 @@ export function PlanPage() {
       </p>
 
       {error ? <p className="error">{error}</p> : null}
+      {notice ? <p className="meta">{notice}</p> : null}
 
       <div className="stack">
         {days.map((day) => {

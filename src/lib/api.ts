@@ -31,14 +31,24 @@ export function errorMessage(err: unknown, fallback: string): string {
   return fallback
 }
 
-function throwQueryError(error: { message: string; code?: string }, fallback: string): never {
-  if (error.code === '42703' && /plan_entries\.notes|column .*notes/i.test(error.message)) {
-    throw new Error(
-      'Plan notes need a database update. In Supabase → SQL, run supabase/migrations/002_plan_entry_notes.sql',
-    )
-  }
-  throw new Error(error.message || fallback)
+export type UpsertPlanResult = {
+  entry: PlanEntry
+  warning?: string
 }
+
+function isMissingNotesColumn(error: { message?: string; code?: string } | null): boolean {
+  return Boolean(
+    error &&
+      error.code === '42703' &&
+      /plan_entries\.notes|column .*notes/i.test(error.message ?? ''),
+  )
+}
+
+/** Once we learn the DB lacks plan_entries.notes, skip sending it for this session. */
+let planNotesColumnMissing = false
+
+const NOTES_UNAVAILABLE_WARNING =
+  'Dinner saved. Side notes will stick after the database notes column is added.'
 
 function emptyLocal(): LocalState {
   const householdId = uid()
@@ -255,7 +265,7 @@ export async function upsertPlanEntry(input: {
   recipe_id?: string | null
   label?: string | null
   notes?: string
-}): Promise<PlanEntry> {
+}): Promise<UpsertPlanResult> {
   const profile = await getProfile()
   if (!profile?.household_id) throw new Error('No household')
 
@@ -268,10 +278,12 @@ export async function upsertPlanEntry(input: {
       if (input.notes !== undefined) existing.notes = input.notes
       else if (existing.notes == null) existing.notes = ''
       writeLocal(state)
-      return normalizePlanEntry(
-        existing,
-        state.recipes.find((r) => r.id === existing.recipe_id) ?? null,
-      )
+      return {
+        entry: normalizePlanEntry(
+          existing,
+          state.recipes.find((r) => r.id === existing.recipe_id) ?? null,
+        ),
+      }
     }
     const entry: PlanEntry = {
       id: uid(),
@@ -284,14 +296,16 @@ export async function upsertPlanEntry(input: {
     }
     state.plan.push(entry)
     writeLocal(state)
-    return normalizePlanEntry(
-      entry,
-      state.recipes.find((r) => r.id === entry.recipe_id) ?? null,
-    )
+    return {
+      entry: normalizePlanEntry(
+        entry,
+        state.recipes.find((r) => r.id === entry.recipe_id) ?? null,
+      ),
+    }
   }
 
   const sb = requireSupabase()
-  const payload: {
+  const basePayload: {
     household_id: string
     date: string
     recipe_id?: string | null
@@ -301,19 +315,41 @@ export async function upsertPlanEntry(input: {
     household_id: profile.household_id,
     date: input.date,
   }
-  if ('recipe_id' in input) payload.recipe_id = input.recipe_id ?? null
-  if ('label' in input) payload.label = input.label ?? null
-  if (input.notes !== undefined) payload.notes = input.notes
+  if ('recipe_id' in input) basePayload.recipe_id = input.recipe_id ?? null
+  if ('label' in input) basePayload.label = input.label ?? null
 
-  const { data, error } = await sb
+  const wantsNotes = input.notes !== undefined && !planNotesColumnMissing
+  const payload = wantsNotes ? { ...basePayload, notes: input.notes } : basePayload
+
+  const first = await sb
     .from('plan_entries')
     .upsert(payload, { onConflict: 'household_id,date' })
     .select('*, recipe:recipes(*)')
     .single()
 
-  if (error) throwQueryError(error, 'Could not save plan entry')
-  const r = data as PlanEntry & { recipe?: Recipe | null }
-  return normalizePlanEntry(r, r.recipe ? normalizeRecipe(r.recipe) : null)
+  if (!first.error) {
+    const r = first.data as PlanEntry & { recipe?: Recipe | null }
+    return {
+      entry: normalizePlanEntry(r, r.recipe ? normalizeRecipe(r.recipe) : null),
+    }
+  }
+
+  if (wantsNotes && isMissingNotesColumn(first.error)) {
+    planNotesColumnMissing = true
+    const retry = await sb
+      .from('plan_entries')
+      .upsert(basePayload, { onConflict: 'household_id,date' })
+      .select('*, recipe:recipes(*)')
+      .single()
+    if (retry.error) throw new Error(retry.error.message || 'Could not save plan entry')
+    const r = retry.data as PlanEntry & { recipe?: Recipe | null }
+    return {
+      entry: normalizePlanEntry(r, r.recipe ? normalizeRecipe(r.recipe) : null),
+      warning: input.notes?.trim() ? NOTES_UNAVAILABLE_WARNING : undefined,
+    }
+  }
+
+  throw new Error(first.error.message || 'Could not save plan entry')
 }
 
 export async function clearPlanEntry(date: string): Promise<void> {

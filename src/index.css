@@ -575,6 +575,30 @@ a {
   min-width: 0;
 }
 
+.day-row .meal-block {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.day-row .meal-block .meal {
+  flex: none;
+}
+
+.day-row .day-note {
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .day-row .meal.empty {
   font-family: Inter, sans-serif;
   font-weight: 500;

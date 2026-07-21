@@ -28,6 +28,7 @@ export type PlanEntry = {
   date: string
   recipe_id: string | null
   label: string | null
+  notes: string
   created_at: string
   recipe?: Recipe | null
 }

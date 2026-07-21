@@ -67,6 +67,14 @@ function normalizeRecipe(row: Recipe): Recipe {
   }
 }
 
+function normalizePlanEntry(row: PlanEntry, recipe?: Recipe | null): PlanEntry {
+  return {
+    ...row,
+    notes: row.notes ?? '',
+    recipe: recipe === undefined ? row.recipe : recipe,
+  }
+}
+
 export async function getProfile(): Promise<Profile | null> {
   if (!isSupabaseConfigured) return readLocal().profile
 
@@ -202,10 +210,9 @@ export async function listPlanEntries(from: string, to: string): Promise<PlanEnt
     const state = readLocal()
     return state.plan
       .filter((p) => p.date >= from && p.date <= to)
-      .map((p) => ({
-        ...p,
-        recipe: state.recipes.find((r) => r.id === p.recipe_id) ?? null,
-      }))
+      .map((p) =>
+        normalizePlanEntry(p, state.recipes.find((r) => r.id === p.recipe_id) ?? null),
+      )
       .sort((a, b) => a.date.localeCompare(b.date))
   }
 
@@ -221,10 +228,7 @@ export async function listPlanEntries(from: string, to: string): Promise<PlanEnt
   return (data ?? []).map((row) => {
     const r = row as PlanEntry & { recipe?: Recipe | Recipe[] | null }
     const recipe = Array.isArray(r.recipe) ? r.recipe[0] : r.recipe
-    return {
-      ...r,
-      recipe: recipe ? normalizeRecipe(recipe) : null,
-    }
+    return normalizePlanEntry(r, recipe ? normalizeRecipe(recipe) : null)
   })
 }
 
@@ -232,6 +236,7 @@ export async function upsertPlanEntry(input: {
   date: string
   recipe_id?: string | null
   label?: string | null
+  notes?: string
 }): Promise<PlanEntry> {
   const profile = await getProfile()
   if (!profile?.household_id) throw new Error('No household')
@@ -240,13 +245,15 @@ export async function upsertPlanEntry(input: {
     const state = readLocal()
     const existing = state.plan.find((p) => p.date === input.date)
     if (existing) {
-      existing.recipe_id = input.recipe_id ?? null
-      existing.label = input.label ?? null
+      if ('recipe_id' in input) existing.recipe_id = input.recipe_id ?? null
+      if ('label' in input) existing.label = input.label ?? null
+      if (input.notes !== undefined) existing.notes = input.notes
+      else if (existing.notes == null) existing.notes = ''
       writeLocal(state)
-      return {
-        ...existing,
-        recipe: state.recipes.find((r) => r.id === existing.recipe_id) ?? null,
-      }
+      return normalizePlanEntry(
+        existing,
+        state.recipes.find((r) => r.id === existing.recipe_id) ?? null,
+      )
     }
     const entry: PlanEntry = {
       id: uid(),
@@ -254,37 +261,41 @@ export async function upsertPlanEntry(input: {
       date: input.date,
       recipe_id: input.recipe_id ?? null,
       label: input.label ?? null,
+      notes: input.notes ?? '',
       created_at: new Date().toISOString(),
     }
     state.plan.push(entry)
     writeLocal(state)
-    return {
-      ...entry,
-      recipe: state.recipes.find((r) => r.id === entry.recipe_id) ?? null,
-    }
+    return normalizePlanEntry(
+      entry,
+      state.recipes.find((r) => r.id === entry.recipe_id) ?? null,
+    )
   }
 
   const sb = requireSupabase()
+  const payload: {
+    household_id: string
+    date: string
+    recipe_id?: string | null
+    label?: string | null
+    notes?: string
+  } = {
+    household_id: profile.household_id,
+    date: input.date,
+  }
+  if ('recipe_id' in input) payload.recipe_id = input.recipe_id ?? null
+  if ('label' in input) payload.label = input.label ?? null
+  if (input.notes !== undefined) payload.notes = input.notes
+
   const { data, error } = await sb
     .from('plan_entries')
-    .upsert(
-      {
-        household_id: profile.household_id,
-        date: input.date,
-        recipe_id: input.recipe_id ?? null,
-        label: input.label ?? null,
-      },
-      { onConflict: 'household_id,date' },
-    )
+    .upsert(payload, { onConflict: 'household_id,date' })
     .select('*, recipe:recipes(*)')
     .single()
 
   if (error) throw error
   const r = data as PlanEntry & { recipe?: Recipe | null }
-  return {
-    ...r,
-    recipe: r.recipe ? normalizeRecipe(r.recipe) : null,
-  }
+  return normalizePlanEntry(r, r.recipe ? normalizeRecipe(r.recipe) : null)
 }
 
 export async function clearPlanEntry(date: string): Promise<void> {

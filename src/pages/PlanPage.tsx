@@ -23,6 +23,7 @@ export function PlanPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [label, setLabel] = useState('')
+  const [notes, setNotes] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -50,7 +51,15 @@ export function PlanPage() {
     return map
   }, [entries])
 
+  useEffect(() => {
+    if (!selectedDate) return
+    const entry = byDate.get(selectedDate)
+    setNotes(entry?.notes ?? '')
+    setLabel(entry?.recipe_id ? '' : (entry?.label ?? ''))
+  }, [selectedDate, byDate])
+
   const plannedCount = entries.filter((e) => e.recipe_id || e.label).length
+  const selectedEntry = selectedDate ? byDate.get(selectedDate) : undefined
 
   async function assignRecipe(recipe: Recipe) {
     if (!selectedDate) return
@@ -60,6 +69,7 @@ export function PlanPage() {
         date: selectedDate,
         recipe_id: recipe.id,
         label: recipe.title,
+        notes: notes.trim(),
       })
       setSelectedDate(null)
       await refresh()
@@ -79,8 +89,28 @@ export function PlanPage() {
         date: selectedDate,
         recipe_id: null,
         label: label.trim(),
+        notes: notes.trim(),
       })
       setLabel('')
+      setSelectedDate(null)
+      await refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not save')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function saveNotes() {
+    if (!selectedDate) return
+    setBusy(true)
+    try {
+      await upsertPlanEntry({
+        date: selectedDate,
+        recipe_id: selectedEntry?.recipe_id ?? null,
+        label: selectedEntry?.label ?? null,
+        notes: notes.trim(),
+      })
       setSelectedDate(null)
       await refresh()
     } catch (err) {
@@ -116,6 +146,7 @@ export function PlanPage() {
           const iso = toISODate(day)
           const entry = byDate.get(iso)
           const meal = entry?.label || entry?.recipe?.title
+          const dayNotes = entry?.notes?.trim()
           const today = isSameDay(day, new Date())
           return (
             <button
@@ -125,7 +156,10 @@ export function PlanPage() {
               onClick={() => setSelectedDate(iso)}
             >
               <span className="d">{formatDayLabel(day)}</span>
-              <span className={`meal ${meal ? '' : 'empty'}`}>{meal || '+ add a dinner'}</span>
+              <span className="meal-block">
+                <span className={`meal ${meal ? '' : 'empty'}`}>{meal || '+ add a dinner'}</span>
+                {dayNotes ? <span className="day-note">{dayNotes}</span> : null}
+              </span>
               {today ? <span className="today-tag">TODAY</span> : null}
             </button>
           )
@@ -140,7 +174,27 @@ export function PlanPage() {
             </h2>
             <p className="meta">Pick a recipe or type a free-text dinner.</p>
 
-            <form className="stack" onSubmit={assignLabel} style={{ marginTop: 12 }}>
+            <div className="field" style={{ marginTop: 12 }}>
+              <label htmlFor="plan-notes">Note</label>
+              <textarea
+                id="plan-notes"
+                rows={2}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Side: roasted broccoli, rice…"
+              />
+            </div>
+            <button
+              type="button"
+              className="btn secondary"
+              style={{ marginTop: 8 }}
+              disabled={busy}
+              onClick={() => void saveNotes()}
+            >
+              Save note
+            </button>
+
+            <form className="stack" onSubmit={assignLabel} style={{ marginTop: 16 }}>
               <div className="field">
                 <label htmlFor="label">Free text</label>
                 <input
